@@ -1,15 +1,5 @@
 <?php
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $database = "myshop";
-
-    $connection = new mysqli($servername,$username,$password,$database);
-
-
-
-
-    $name = "";
+  $name = "";
     $email = "";
     $phone = "";
     $address = "";
@@ -17,37 +7,53 @@
     $errorMessage = "";
     $successMessage = "";
 
-    if( $_SERVER['REQUEST_METHOD']  == 'POST' ){
-        $name = $_POST["name"];
-        $email = $_POST["email"];
-        $phone = $_POST["phone"];
-        $address = $_POST["address"];
+    if( $_SERVER['REQUEST_METHOD']  == 'GET' ){
+        if(!isset($_GET["id"])){
+            header("location: /php-learning/index.php");
+            exit;
+        }
 
-        do {
-            if(empty($name) || empty($email) || empty($phone) || empty($address)){
-                $errorMessage = "all fields are required";
+        $id = $_GET["id"];
+
+        $sql = "SELECT * FROM clients WHERE id=$id";
+        $result = $connection->query($sql);
+        $row = $result->fetch_assoc();
+
+        if(!$row){
+            header("location: /php-learning/index.php");
+            exit;
+        }
+        $name = $row["name"];
+        $email = $row["email"];
+        $phone = $row["phone"];
+        $address = $row["address"];
+}else {
+       
+            $id = $_POST["id"];
+            $name = $_POST["name"];
+            $email = $_POST["email"];
+            $phone = $_POST["phone"];
+            $address = $_POST["address"];
+        
+            do{
+             if(empty($name) || empty($email) || empty($phone) || empty($address)){
+                $errorMessage = "all the fields are required";
                 break;
-            }
+             }   
 
-            $sql = "INSERT INTO clients (name,email,phone,address)" . "VALUES ('$name', '$email','$phone','$address')"; 
-            $result = $connection->query($sql);
+             $sql = "UPDATE clients SET name = '$name', email = '$email', phone = '$phone', address = '$address' WHERE id = $id";
 
-            if(!$result){
+             $result = $connection->query($sql);
+
+             if(!$result){
                 $errorMessage = "invalid query" . $connection->error;
                 break;
-            }
+             }
 
-        $name = "";
-        $email = "";
-        $phone = "";
-        $address = "";
-
-        $successMessage = "client added successfuly";
-
-        header("location: /php-learning/index.php");
-        exit;
-
-        }while (false);
+             $successMessage = "client updated correctly";
+             header("location: /php-learning/index.php");
+             exit;
+            }while(false);
     }
 ?>
 
@@ -59,7 +65,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js
 "></script>
-    <title>create</title>
+    <title>edit</title>
 </head>
 <body>
     <div class="container my-5">
@@ -76,6 +82,7 @@
             }
         ?>
         <form method="post">
+            <input type="hidden" value="<?php echo $id; ?>>
             <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">name</label>
                 <div class="col-sm-6">
